@@ -1,0 +1,8 @@
+EEG-UG:
+Project Setup 
+
+Repo: 
+https://github.com/AhmadAtif786/EEG-UG
+
+Deployment:
+https://eeg-ug.netlify.app/
