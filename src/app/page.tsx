@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
- const [year, setYear] = useState<any>(null);
+  const [year, setYear] = useState<any>(null);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -81,7 +81,7 @@ export default function Home() {
           Kosten zu teilen.
         </motion.p>
         <motion.button
-        initial={{ opacity: 0 }}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
           className="bg-black text-white cursor-pointer px-6 py-2 rounded hover:bg-gray-800 transition"
@@ -163,7 +163,7 @@ export default function Home() {
                   alt={`Logo ${n}`}
                   width={200}
                   height={100}
-                  className="inline-block"
+                  className="inline-block w-24 sm:w-32 md:w-40 lg:w-48 h-auto"
                 />
               ))
             )}
@@ -171,16 +171,17 @@ export default function Home() {
         </div>
       </section>
 
+
       {/* Footer */}
       <footer className="bg-black text-white py-6 px-6 mt-10">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-        <p className="text-sm">&copy; {year} EEG Unteres Görtschitztal. Alle Rechte vorbehalten.</p>
-        <div className="flex gap-4 text-sm">
-          <a href="#" className="hover:underline">Datenschutz</a>
-          <a href="#" className="hover:underline">Impressum</a>
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm">&copy; {year} EEG Unteres Görtschitztal. Alle Rechte vorbehalten.</p>
+          <div className="flex gap-4 text-sm">
+            <a href="#" className="hover:underline">Datenschutz</a>
+            <a href="#" className="hover:underline">Impressum</a>
+          </div>
         </div>
-      </div>
-    </footer>
+      </footer>
     </main>
   );
 }
