@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,49 +18,7 @@ export default function Home() {
 
   return (
     <main className="bg-white text-black font-sans">
-      {/* Header */}
-      <header className="w-full py-4 px-6 border-b shadow-sm flex items-center justify-between relative">
-        <div className="flex items-center gap-2">
-          <Image src="/Logo_EEG_UG.png" alt="EEG Logo" width={120} height={40} />
-        </div>
-
-        {/* Desktop Menu */}
-        <nav className="hidden md:flex items-center gap-6 text-sm">
-          <a href="#" className="hover:underline">Start</a>
-          <a href="#" className="hover:underline">Tarife</a>
-          <a href="#" className="hover:underline">Mitgliederbereich</a>
-          <a href="#" className="hover:underline">Kontakt</a>
-          <button className="bg-black text-white px-4 py-1 rounded transition hover:bg-gray-800">Beitreten</button>
-        </nav>
-
-        {/* Mobile Hamburger */}
-        <button
-          className="md:hidden flex flex-col gap-1"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          <span className="w-6 h-0.5 bg-black"></span>
-          <span className="w-6 h-0.5 bg-black"></span>
-          <span className="w-6 h-0.5 bg-black"></span>
-        </button>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <motion.nav
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="absolute top-full left-0 w-full bg-white shadow-md flex flex-col items-start p-4 gap-4 z-10 md:hidden"
-          >
-            <a href="#" className="hover:underline">Start</a>
-            <a href="#" className="hover:underline">Tarife</a>
-            <a href="#" className="hover:underline">Mitgliederbereich</a>
-            <a href="#" className="hover:underline">Kontakt</a>
-            <button className="bg-black text-white px-4 py-1 rounded">Beitreten</button>
-          </motion.nav>
-        )}
-      </header>
-
+     
       {/* Hero Section */}
       <section className="bg-gray-100 py-10 px-6 text-center">
         <motion.h1
