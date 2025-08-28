@@ -9,7 +9,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div>   <header className="w-full py-4 px-6 border-b shadow-sm flex items-center justify-between relative">
+    <div>   <header className="w-full py-4 px-6 border-b shadow-sm flex items-center justify-between relative bg-white">
       <div className="flex items-center gap-2">
         <Image src="/Logo_EEG_UG.png" alt="EEG Logo" width={120} height={40} />
       </div>
@@ -20,7 +20,7 @@ const Header = () => {
         <Link href="/Tarife" className="hover:underline">Tarife</Link>
         <Link href="/BeAMember" className="hover:underline">Mitgliederbereich</Link>
         <Link href="/Contact" className="hover:underline">Kontakt</Link>
-        <button className="bg-black text-white px-4 py-1 rounded transition hover:bg-gray-800">Beitreten</button>
+        <Link href="/login" className="bg-black text-white px-4 py-1 rounded transition hover:bg-gray-800">Login</Link>
       </nav>
 
       {/* Mobile Hamburger */}
@@ -46,7 +46,7 @@ const Header = () => {
           <Link href="/Tarife" className="hover:underline">Tarife</Link>
           <Link href="/BeAMember" className="hover:underline">Mitgliederbereich</Link>
           <Link href="/Contact" className="hover:underline">Kontakt</Link>
-          <button className="bg-black text-white px-4 py-1 rounded">Beitreten</button>
+          <Link href="/login" className="bg-black text-white px-4 py-1 rounded">Login</Link>
         </motion.nav>
       )}
     </header></div>
