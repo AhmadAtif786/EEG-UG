@@ -9,7 +9,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div>   <header className="w-full py-4 px-6 border-b shadow-sm flex items-center justify-between relative bg-white">
+    <div>   <header className="w-full py-4 px-6 border-b shadow-sm flex items-center justify-between relative bg-white text-black">
       <div className="flex items-center gap-2">
         <Image src="/Logo_EEG_UG.png" alt="EEG Logo" width={120} height={40} />
       </div>
