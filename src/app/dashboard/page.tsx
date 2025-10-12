@@ -51,66 +51,65 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [agg, setAgg] = useState("1h"); // default aggregation
 
-const fetchEnergy = async (aggValue: string) => {
-  setLoading(true);
+  const fetchEnergy = async (aggValue: string) => {
+    setLoading(true);
 
-  try {
-    const token = localStorage.getItem("token"); // 🔑 stored at login
-    if (!token) throw new Error("No token found, please login again");
-console.log(token)
-    const cpsRes = await fetch("/api/userpoints", {
-      headers: {
-        Authorization: `Bearer ${token}`, // ✅ attach JWT
-      },
-    });
+    try {
+      const token = localStorage.getItem("token"); // 🔑 stored at login
+      if (!token) throw new Error("No token found, please login again");
+      console.log(token);
+      const cpsRes = await fetch("/api/userpoints", {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ attach JWT
+        },
+      });
 
-    const cpsJson = await cpsRes.json();
-    if (!cpsJson.success) throw new Error(cpsJson.error || "No points found");
+      const cpsJson = await cpsRes.json();
+      if (!cpsJson.success) throw new Error(cpsJson.error || "No points found");
 
-    const now = Date.now();
-    const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
 
-    const res = await fetch("/api/energy", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // ✅ also secure your /api/energy if needed
-      },
-      body: JSON.stringify({
-        ecId: "AT00700009020RC101905000000689941",
-        cps: cpsJson.cps,
-        start: oneWeekAgo,
-        end: now,
-        agg: aggValue,
-      }),
-    });
+      const res = await fetch("/api/energy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ also secure your /api/energy if needed
+        },
+        body: JSON.stringify({
+          ecId: "AT00700009020RC101905000000689941",
+          cps: cpsJson.cps,
+          start: oneWeekAgo,
+          end: now,
+          agg: aggValue,
+        }),
+      });
 
-    const result = await res.json();
+      const result = await res.json();
 
-    if (result.success) {
-      const formatted = normalizeApiResponse(result).map((row) => ({
-        ...row,
-        time:
-          aggValue === "1h"
-            ? new Date(row.time).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : new Date(row.time).toLocaleDateString(),
-      }));
+      if (result.success) {
+        const formatted = normalizeApiResponse(result).map((row) => ({
+          ...row,
+          time:
+            aggValue === "1h"
+              ? new Date(row.time).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : new Date(row.time).toLocaleDateString(),
+        }));
 
-      setData(formatted);
-    } else {
-      alert("Failed: " + JSON.stringify(result.error));
+        setData(formatted);
+      } else {
+        alert("Failed: " + JSON.stringify(result.error));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching energy data");
     }
-  } catch (err) {
-    console.error(err);
-    alert("Error fetching energy data");
-  }
 
-  setLoading(false);
-};
-
+    setLoading(false);
+  };
 
   useEffect(() => {
     fetchEnergy(agg);
@@ -207,7 +206,9 @@ console.log(token)
       <main className="flex-1 px-8 py-8 overflow-y-auto">
         <header className="mb-10 flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-extrabold tracking-tight">Dashboard</h1>
+            <h1 className="text-4xl font-extrabold tracking-tight">
+              Dashboard
+            </h1>
             <p className="text-gray-500 mt-1">
               Overview of energy consumption & generation
             </p>
@@ -239,49 +240,52 @@ console.log(token)
               </h2>
               <div className="flex gap-4 text-sm">
                 <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-blue-600"></span>
+                  <span className="w-3 h-3 rounded-full bg-orange-500"></span>
                   <span className="text-gray-600">Consumption</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-orange-500"></span>
+                  <span className="w-3 h-3 rounded-full bg-blue-600"></span>
                   <span className="text-gray-600">Generation</span>
                 </div>
               </div>
             </div>
-          {loading ? (
-  <div className="flex items-center justify-center h-[300px]">
-    <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-  </div>
-) : (
-  <ResponsiveContainer width="100%" height={300}>
-    <LineChart>
-      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-      <XAxis dataKey="time" stroke="#6b7280" />
-      <YAxis stroke="#6b7280" />
-      <Tooltip content={<CustomTooltip />} />
 
-      <Line
-        type="monotone"
-        data={consumptionData}
-        dataKey="consumption"
-        stroke="#2563eb"
-        strokeWidth={3}
-        dot={false}
-        name="Consumption"
-      />
-      <Line
-        type="monotone"
-        data={generationData}
-        dataKey="consumption"
-        stroke="#f97316"
-        strokeWidth={3}
-        dot={false}
-        name="Generation"
-      />
-    </LineChart>
-  </ResponsiveContainer>
-)}
+            {loading ? (
+              <div className="flex items-center justify-center h-[300px]">
+                <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="time" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip content={<CustomTooltip />} />
 
+                  {/* Generation (Blue) */}
+                  <Line
+                    type="monotone"
+                    data={generationData}
+                    dataKey="consumption"
+                    stroke="#2563eb"
+                    strokeWidth={3}
+                    dot={false}
+                    name="Generation"
+                  />
+
+                  {/* Consumption (Orange) */}
+                  <Line
+                    type="monotone"
+                    data={consumptionData}
+                    dataKey="consumption"
+                    stroke="#f97316"
+                    strokeWidth={3}
+                    dot={false}
+                    name="Consumption"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           {/* Bar Chart (Peak Consumption vs Generation) */}
@@ -292,47 +296,50 @@ console.log(token)
               </h2>
               <div className="flex gap-4 text-sm">
                 <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-blue-600"></span>
+                  <span className="w-3 h-3 rounded-full bg-orange-500"></span>
                   <span className="text-gray-600">Consumption</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-orange-500"></span>
+                  <span className="w-3 h-3 rounded-full bg-blue-600"></span>
                   <span className="text-gray-600">Generation</span>
                 </div>
               </div>
             </div>
-          {loading ? (
-  <div className="flex items-center justify-center h-[300px]">
-    <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-  </div>
-) : (
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart data={data}>
-      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-      <XAxis dataKey="time" stroke="#6b7280" />
-      <YAxis stroke="#6b7280" />
-      <Tooltip content={<CustomTooltip />} />
 
-      <Bar
-        dataKey={(entry: any) =>
-          entry.direction === "CONSUMPTION" ? entry.peak : null
-        }
-        fill="#2563eb"
-        name="Consumption Peak"
-        radius={[6, 6, 0, 0]}
-      />
-      <Bar
-        dataKey={(entry: any) =>
-          entry.direction === "GENERATION" ? entry.peak : null
-        }
-        fill="#f97316"
-        name="Generation Peak"
-        radius={[6, 6, 0, 0]}
-      />
-    </BarChart>
-  </ResponsiveContainer>
-)}
+            {loading ? (
+              <div className="flex items-center justify-center h-[300px]">
+                <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="time" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip content={<CustomTooltip />} />
 
+                  {/* Generation (Blue) */}
+                  <Bar
+                    dataKey={(entry: any) =>
+                      entry.direction === "GENERATION" ? entry.peak : null
+                    }
+                    fill="#2563eb"
+                    name="Generation Peak"
+                    radius={[6, 6, 0, 0]}
+                  />
+
+                  {/* Consumption (Orange) */}
+                  <Bar
+                    dataKey={(entry: any) =>
+                      entry.direction === "CONSUMPTION" ? entry.peak : null
+                    }
+                    fill="#f97316"
+                    name="Consumption Peak"
+                    radius={[6, 6, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
       </main>
@@ -348,7 +355,9 @@ console.log(token)
           >
             <div className="bg-black/70 text-white px-8 py-6 rounded-2xl shadow-2xl text-center">
               <h2 className="text-2xl font-bold mb-2">🚧 Coming Soon</h2>
-              <p className="text-gray-300">This feature is under development.</p>
+              <p className="text-gray-300">
+                This feature is under development.
+              </p>
             </div>
           </motion.div>
         )}
