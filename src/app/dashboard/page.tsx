@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -23,13 +21,12 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
-// 🔹 normalize API response (supports multiple metering points)
+// 🔹 normalize API response
 function normalizeApiResponse(apiRes: any) {
   const result: any[] = [];
 
   Object.entries(apiRes.data).forEach(([meteringPoint, mpData]: any) => {
     const { direction, data } = mpData;
-
     data.forEach((row: any) => {
       result.push({
         meteringPoint,
@@ -49,21 +46,18 @@ export default function Dashboard() {
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [agg, setAgg] = useState("1h"); // default aggregation
+  const [agg, setAgg] = useState("1h");
 
   const fetchEnergy = async (aggValue: string) => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token"); // 🔑 stored at login
+      const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found, please login again");
-      console.log(token);
-      const cpsRes = await fetch("/api/userpoints", {
-        headers: {
-          Authorization: `Bearer ${token}`, // ✅ attach JWT
-        },
-      });
 
+      const cpsRes = await fetch("/api/userpoints", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const cpsJson = await cpsRes.json();
       if (!cpsJson.success) throw new Error(cpsJson.error || "No points found");
 
@@ -74,7 +68,7 @@ export default function Dashboard() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // ✅ also secure your /api/energy if needed
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           ecId: "AT00700009020RC101905000000689941",
@@ -92,11 +86,14 @@ export default function Dashboard() {
           ...row,
           time:
             aggValue === "1h"
-              ? new Date(row.time).toLocaleTimeString([], {
+              ? new Date(row.time).toLocaleTimeString("en-GB", {
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: "UTC",
                 })
-              : new Date(row.time).toLocaleDateString(),
+              : new Date(row.time).toLocaleDateString("en-GB", {
+                  timeZone: "UTC",
+                }),
         }));
 
         setData(formatted);
@@ -127,8 +124,7 @@ export default function Dashboard() {
           <p className="text-sm font-semibold text-gray-600">{label}</p>
           {payload.map((item: any, index: number) => (
             <p key={index} className="text-sm text-gray-800">
-              {item.payload.direction} – {item.name}:{" "}
-              <span className="font-bold">{item.value}</span>
+              {item.name}: <span className="font-bold">{item.value}</span>
             </p>
           ))}
         </div>
@@ -137,9 +133,22 @@ export default function Dashboard() {
     return null;
   };
 
-  // 🔹 split by direction
-  const consumptionData = data.filter((d) => d.direction === "CONSUMPTION");
-  const generationData = data.filter((d) => d.direction === "GENERATION");
+  // 🔹 Combine CONSUMPTION + GENERATION per time key
+  const combinedData = Object.values(
+    data.reduce((acc: any, curr: any) => {
+      const { time, direction, consumption, peak } = curr;
+      if (!acc[time])
+        acc[time] = { time, consumptionValue: null, generationValue: null, consumptionPeak: null, generationPeak: null };
+      if (direction === "CONSUMPTION") {
+        acc[time].consumptionValue = consumption;
+        acc[time].consumptionPeak = peak;
+      } else if (direction === "GENERATION") {
+        acc[time].generationValue = consumption;
+        acc[time].generationPeak = peak;
+      }
+      return acc;
+    }, {})
+  );
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-200 text-black">
@@ -163,7 +172,6 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* Nav */}
           <nav className="mt-8 flex flex-col gap-3">
             <a
               href="#"
@@ -214,7 +222,6 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Aggregation Selector */}
           <div>
             <label className="text-sm font-medium text-gray-600 mr-2">
               Interval:
@@ -232,7 +239,7 @@ export default function Dashboard() {
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-          {/* Line Chart (Consumption & Generation) */}
+          {/* Bar Chart 1: Energy Trends */}
           <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">
@@ -256,39 +263,32 @@ export default function Dashboard() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart>
+                <BarChart
+                  data={combinedData}
+                  barCategoryGap="30%"
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="time" stroke="#6b7280" />
                   <YAxis stroke="#6b7280" />
                   <Tooltip content={<CustomTooltip />} />
-
-                  {/* Generation (Blue) */}
-                  <Line
-                    type="monotone"
-                    data={generationData}
-                    dataKey="consumption"
-                    stroke="#2563eb"
-                    strokeWidth={3}
-                    dot={false}
-                    name="Generation"
-                  />
-
-                  {/* Consumption (Orange) */}
-                  <Line
-                    type="monotone"
-                    data={consumptionData}
-                    dataKey="consumption"
-                    stroke="#f97316"
-                    strokeWidth={3}
-                    dot={false}
+                  <Bar
+                    dataKey="consumptionValue"
+                    fill="#f97316"
                     name="Consumption"
+                    radius={[6, 6, 0, 0]}
                   />
-                </LineChart>
+                  <Bar
+                    dataKey="generationValue"
+                    fill="#2563eb"
+                    name="Generation"
+                    radius={[6, 6, 0, 0]}
+                  />
+                </BarChart>
               </ResponsiveContainer>
             )}
           </div>
 
-          {/* Bar Chart (Peak Consumption vs Generation) */}
+          {/* Bar Chart 2: Peak Usage */}
           <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">
@@ -312,29 +312,21 @@ export default function Dashboard() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data}>
+                <BarChart data={combinedData} barCategoryGap="30%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="time" stroke="#6b7280" />
                   <YAxis stroke="#6b7280" />
                   <Tooltip content={<CustomTooltip />} />
-
-                  {/* Generation (Blue) */}
                   <Bar
-                    dataKey={(entry: any) =>
-                      entry.direction === "GENERATION" ? entry.peak : null
-                    }
-                    fill="#2563eb"
-                    name="Generation Peak"
-                    radius={[6, 6, 0, 0]}
-                  />
-
-                  {/* Consumption (Orange) */}
-                  <Bar
-                    dataKey={(entry: any) =>
-                      entry.direction === "CONSUMPTION" ? entry.peak : null
-                    }
+                    dataKey="consumptionPeak"
                     fill="#f97316"
                     name="Consumption Peak"
+                    radius={[6, 6, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="generationPeak"
+                    fill="#2563eb"
+                    name="Generation Peak"
                     radius={[6, 6, 0, 0]}
                   />
                 </BarChart>
